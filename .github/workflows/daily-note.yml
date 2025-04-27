@@ -1,0 +1,32 @@
+name: Daily Note Generator
+on:
+  schedule:
+    - cron: '0 20 * * *'  # 每天UTC时间20:00（北京时间次日4:00）运行
+  workflow_dispatch:      # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Create note
+      run: |
+        DATE=$(date -d '+8 hours' +'%Y-%m-%d')  # 北京时间调整
+        mkdir -p daily-notes
+        FILE="daily-notes/$DATE.md"
+        
+        if [ ! -f "$FILE" ]; then
+          echo "# $DATE 学习日志" > $FILE
+          echo "## 🌟 今日目标" >> $FILE
+          echo "- [ ] " >> $FILE
+          echo "## 📝 学习记录" >> $FILE
+          echo "## 💡 小智金句" >> $FILE
+          echo "> " >> $FILE
+        fi
+        
+        git config --global user.name "Automation Bot"
+        git config --global user.email "actions@github.com"
+        git add .
+        git commit -m "自动生成 $DATE 学习日志"
+        git push
